@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using OfficeOpenXml;
 using System.IO;
+using TaskAccounting.Entity.XlsxRequestInfo;
+using TaskAccounting.Entity;
+using TaskAccounting.Parser;
+using TaskAccounting.Filler;
+using TaskAccounting.XlsxService;
 
 namespace TaskAccounting
 {
@@ -27,11 +32,27 @@ namespace TaskAccounting
     {
         readonly string path = "C:/Users/Иван/Downloads/attachments/справочник1.xlsx";
 
+        private ClientWindow parentForm = null;
+
         public TaskPicker()
         {
             InitializeComponent();
 
-            FillComboBox(departmentPickerComboBox, GetUniqueCellValues(new XlsxDepartmentRequestInfo(path)));           
+            List<string> fields = XlsxService.XlsxService.GetUniqueCellValues(new XlsxDepartmentRequestInfo(path));
+            ListControlFiller.ComboBoxWithStringList(departmentPickerComboBox, fields);
+
+            ControlEnability();
+        }
+
+        public TaskPicker(ClientWindow newParentForm)
+        {
+            InitializeComponent();
+
+            List<string> fields = XlsxService.XlsxService.GetUniqueCellValues(new XlsxDepartmentRequestInfo(path));
+            ListControlFiller.ComboBoxWithStringList(departmentPickerComboBox, fields);
+
+            parentForm = newParentForm;
+            parentForm.SetControlEnability(false);
 
             ControlEnability();
         }
@@ -76,7 +97,8 @@ namespace TaskAccounting
                     taskTypePickerComboBox.Enabled = false;
                     taskCheckedListBox.Enabled = false;
 
-                    FillComboBox(projectPickerComboBox, GetUniqueCellValues(new XlsxRequestInfo(path, XlsxColumns.projectName, departmentPickerComboBox.Text)));
+                    var requetInfo = new XlsxColumnRequestInfo(path, XlsxColumns.projectName, departmentPickerComboBox.Text);
+                    ListControlFiller.ComboBoxWithStringList(projectPickerComboBox, XlsxService.XlsxService.GetUniqueCellValues(requetInfo));
                     projectPickerComboBox.Enabled = true;
                 }
             }
@@ -106,7 +128,8 @@ namespace TaskAccounting
                     taskTypePickerComboBox.Enabled = false;
                     taskCheckedListBox.Enabled = false;
 
-                    FillComboBox(taskTypePickerComboBox, GetUniqueCellValues(new XlsxRequestInfo(path, XlsxColumns.taskGroup, projectPickerComboBox.Text)));
+                    var requetInfo = new XlsxColumnRequestInfo(path, XlsxColumns.taskGroup, projectPickerComboBox.Text);
+                    ListControlFiller.ComboBoxWithStringList(taskTypePickerComboBox, XlsxService.XlsxService.GetUniqueCellValues(requetInfo));
                     taskTypePickerComboBox.Enabled = true;
                 }
             }
@@ -126,12 +149,29 @@ namespace TaskAccounting
                 }
                 else
                 {
-                    bigTaskTypeLable.Text = Parser(taskTypePickerComboBox.Text);
+                    bigTaskTypeLable.Text = StringParser.LongSpaceToNewLine(taskTypePickerComboBox.Text);
                     taskCheckedListBox.Items.Clear();
 
                     taskCheckedListBox.Enabled = false;
 
-                    FillTaskCheckedBox(taskCheckedListBox, GetUniqueCellValues(new XlsxRequestInfo(path, XlsxColumns.taskName, taskTypePickerComboBox.Text)));
+                    var requetInfo1 = new XlsxColumnRequestInfo(path, XlsxColumns.taskName, taskTypePickerComboBox.Text);
+                    var requetInfo2 = new XlsxColumnRequestInfo(path, XlsxColumns.taskCode, XlsxColumns.taskGroup, taskTypePickerComboBox.Text);
+
+                    //var strs1 = XlsxService.XlsxService.GetUniqueCellValues(requetInfo1);
+                    //var strs2 = XlsxService.XlsxService.GetUniqueCellValues(requetInfo2);
+                    //var strssum = new List<string>();
+                    //if(strs1.Count==strs2.Count)
+                    //{
+                    //    for (int i = 0; i < strs1.Count; i++)
+                    //        strssum.Add(StringParser.CombineBySeparator(strs2[i], strs1[i], (char)2));
+                    //}
+
+                    var requests = new List<Interface.IXlsxRequetInfo>();
+                    requests.Add(requetInfo2);
+                    requests.Add(requetInfo1);
+                    var strssum = XlsxService.XlsxService.GetUniqueCellValues(requests);
+
+                    ListControlFiller.CheckedListBoxWithStringList(taskCheckedListBox, strssum);
                     taskCheckedListBox.Enabled = true;
                 }
             }
@@ -141,198 +181,62 @@ namespace TaskAccounting
             }
         }
 
-        private string Parser(string strIn)
-        {
-            string str = strIn;
-            int i = 0;
-            if(str[i]==' ')
-            {
-                int j = i + 1;
-                for (; j < str.Length; j++)
-                {
-                    if (str[j] != ' ')
-                    {
-                        break;
-                    }
-                }
-                if (j - i > 3)
-                {
-                    str = str.Remove(i, j - i);
-                    i = j;
-                }
-            }
-
-            for(; i < str.Length - 5; i++)
-            {
-                if(str[i]==' ')
-                {
-                    int j = i + 1;
-                    for (; j < str.Length; j++)
-                    {
-                        if (str[j] != ' ')
-                        {
-                            break;
-                        }
-                    }
-                    if(j-i>3)
-                    {
-                        str = str.Remove(i, j - i);
-                        str = str.Insert(i, '\n'.ToString());
-                        i = j;
-                    }
-                }
-            }
-
-            return str;
-        }
-
-        private void FillComboBox(ComboBox comboBox, List<string> fields)
-        {
-            if (fields == null)
-            {
-                throw new Exception("Подан пустой список для впадающего списка на заполнение");
-            }
-
-            var array = new string[comboBox.Items.Count + 1];
-            comboBox.Items.CopyTo(array, 0);
-
-            comboBox.Items.Clear();
-            foreach (string field in fields)
-            {
-                if (field == null)
-                {
-                    comboBox.Items.Clear();
-                    comboBox.Items.AddRange(array);
-                    throw new Exception("В списке для впадающего списка оказалось путое имя");
-                }
-
-                comboBox.Items.Add(field);
-            }
-        }
-
-        private void FillTaskCheckedBox(CheckedListBox checkedListBox, List<string> tasks)
-        {
-            if(tasks==null)
-            {
-                throw new Exception("Подан пустой список для впадающего списка на заполнение");
-            }
-
-            var array = new string[checkedListBox.Items.Count + 1];
-            checkedListBox.Items.CopyTo(array, 0);
-
-            checkedListBox.Items.Clear();
-            foreach(string task in tasks)
-            {
-                if(task==null)
-                {
-                    checkedListBox.Items.Clear();
-                    checkedListBox.Items.AddRange(array);
-                    throw new Exception("Ошибка в списке задач на заполнение");
-                }
-
-                checkedListBox.Items.Add(task);
-            }
-        }        
-
-        private List<string> GetUniqueCellValues(IXlsxRequetInfo xlsxRequestInfo)
-        {
-            if(xlsxRequestInfo == null)
-            {
-                throw new Exception("Не создан запрос");
-            }
-            if (xlsxRequestInfo.path == null)
-            {
-                throw new Exception("Неверный формат пути к файлу");
-            }
-            if (!File.Exists(path))
-            {
-                throw new Exception("Файла не существует");
-            }
-
-            ExcelPackage xlPackage = new ExcelPackage(new FileInfo(path));
-            ExcelWorksheet excelWorksheet = xlPackage.Workbook.Worksheets.First();
-            var strs = new List<string>();            
-
-            for (int row = 3; row < excelWorksheet.Dimension.End.Row; row++)
-            {
-                if(xlsxRequestInfo.CheckRow(excelWorksheet,row,strs))
-                {
-                    strs.Add(excelWorksheet.Cells[row, (int)xlsxRequestInfo.column].Value.ToString());
-                }
-            }
-
-            return strs;
-        }
-
         private void okButton_Click(object sender, EventArgs e)
         {
+            //FillDataGrid(parentForm.DataGrid, TaskList)
 
-        }
-    }
+            //ExcelPackage xlPackage = new ExcelPackage(new FileInfo(path));
+            //ExcelWorksheet excelWorksheet = xlPackage.Workbook.Worksheets.First();
+            var tasks = new List<TaskInfo>();
 
-    interface IXlsxRequetInfo
-    {
-        string path { get; }
-        XlsxColumns column { get; }
 
-        bool CheckRow(ExcelWorksheet excelWorksheet, int row, List<string> strs);
-    }
-    
-    class XlsxRequestInfo : IXlsxRequetInfo
-    {
-        public string path { get; }
-        public XlsxColumns column { get; }
-        public XlsxColumns referencedColumn { get; }
-        public string refVal { get; }
-
-        public XlsxRequestInfo(string newPath, XlsxColumns newColumn, string newRefVal)
-        {
-            path = newPath;
-            column = newColumn;
-            refVal = newRefVal;
-
-            switch (column)
+            
+            
+            //Долго для большого множества 
+            foreach (var i in taskCheckedListBox.Items)
             {
-                case XlsxColumns.projectName:
-                    referencedColumn = XlsxColumns.departmentName;
-                    break;
-                case XlsxColumns.taskGroup:
-                    referencedColumn = XlsxColumns.projectName;
-                    break;
-                case XlsxColumns.taskName:
-                    referencedColumn = XlsxColumns.taskGroup;
-                    break;
+                var taskInfoRequetInfo = new XlsxTaskInfoRequetInfo(path, XlsxColumns.taskCode, i.ToString().Substring(0, i.ToString().IndexOf((char)2)));
+                tasks.Add(XlsxService.XlsxService.GetTaskInfo(taskInfoRequetInfo));
+            }
+
+            
+
+            parentForm.FillDataGrid(tasks);
+        }
+
+        private TaskInfo GetTaskInfoByTaskName(string taskName, ExcelWorksheet excelWorksheet)
+        {
+            var taskInfo = new TaskInfo();
+            taskInfo.taskName = taskName;
+
+            for (int rowN = 3; rowN < excelWorksheet.Dimension.End.Row; rowN++)
+            {
+                if (excelWorksheet.Cells[rowN, (int)XlsxColumns.taskName].Value.ToString() == taskName)
+                {
+                    taskInfo.project = excelWorksheet.Cells[rowN, (int)XlsxColumns.projectName].Value.ToString();
+                    taskInfo.taskType = excelWorksheet.Cells[rowN, (int)XlsxColumns.taskGroup].Value.ToString();
+                    taskInfo.taskCode = excelWorksheet.Cells[rowN, (int)XlsxColumns.taskCode].Value.ToString();
+
+                    return taskInfo;
+                }
+            }
+
+            throw new Exception($"Задача с таким именем не найдена в базе:\n{taskName}");
+        }
+
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void TaskPicker_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (parentForm != null)
+            {
+                parentForm.SetControlEnability(true);
             }
         }
-
-        bool IXlsxRequetInfo.CheckRow(ExcelWorksheet excelWorksheet, int row, List<string> strs)
-        {
-            if (excelWorksheet.Cells[row, (int)column].Value != null)
-                if (excelWorksheet.Cells[row, (int)referencedColumn].Value != null)
-                    if (excelWorksheet.Cells[row, (int)referencedColumn].Value.ToString() == refVal)
-                        if (!strs.Contains(excelWorksheet.Cells[row, (int)column].Value.ToString()))
-                            return true;
-            return false;
-        }
     }
 
-    class XlsxDepartmentRequestInfo : IXlsxRequetInfo
-    {
-        public string path { get; }
-        public XlsxColumns column { get; }
-
-        public XlsxDepartmentRequestInfo(string newPath)
-        {
-            path = newPath;
-            column = XlsxColumns.departmentName;
-        }
-
-        bool IXlsxRequetInfo.CheckRow(ExcelWorksheet excelWorksheet, int row, List<string> strs)
-        {
-            if (excelWorksheet.Cells[row, (int)column].Value != null)
-                if (!strs.Contains(excelWorksheet.Cells[row, (int)column].Value.ToString()))
-                    return true;
-            return false;
-        }
-    }
+    
 }

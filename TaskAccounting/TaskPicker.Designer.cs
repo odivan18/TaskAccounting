@@ -39,9 +39,9 @@ namespace TaskAccounting
             this.okButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.bigTaskTypeLable = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.addToFinalListButton = new System.Windows.Forms.Button();
+            this.deleteFromFinalListButton = new System.Windows.Forms.Button();
+            this.finalCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.SuspendLayout();
             // 
             // departmentPickerComboBox
@@ -83,7 +83,7 @@ namespace TaskAccounting
             // taskCheckedListBox
             // 
             this.taskCheckedListBox.FormattingEnabled = true;
-            this.taskCheckedListBox.Location = new System.Drawing.Point(12, 178);
+            this.taskCheckedListBox.Location = new System.Drawing.Point(12, 194);
             this.taskCheckedListBox.Name = "taskCheckedListBox";
             this.taskCheckedListBox.Size = new System.Drawing.Size(776, 94);
             this.taskCheckedListBox.TabIndex = 4;
@@ -108,7 +108,7 @@ namespace TaskAccounting
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(713, 413);
+            this.okButton.Location = new System.Drawing.Point(713, 423);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 7;
@@ -118,12 +118,13 @@ namespace TaskAccounting
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(632, 413);
+            this.cancelButton.Location = new System.Drawing.Point(632, 423);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 8;
             this.cancelButton.Text = "Отмена";
             this.cancelButton.UseVisualStyleBackColor = true;
+            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
             // bigTaskTypeLable
             // 
@@ -133,41 +134,40 @@ namespace TaskAccounting
             this.bigTaskTypeLable.Size = new System.Drawing.Size(0, 13);
             this.bigTaskTypeLable.TabIndex = 9;
             // 
-            // button1
+            // addToFinalListButton
             // 
-            this.button1.Location = new System.Drawing.Point(385, 279);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
+            this.addToFinalListButton.Location = new System.Drawing.Point(313, 294);
+            this.addToFinalListButton.Name = "addToFinalListButton";
+            this.addToFinalListButton.Size = new System.Drawing.Size(75, 23);
+            this.addToFinalListButton.TabIndex = 10;
+            this.addToFinalListButton.Text = "Добавить";
+            this.addToFinalListButton.UseVisualStyleBackColor = true;
             // 
-            // button2
+            // deleteFromFinalListButton
             // 
-            this.button2.Location = new System.Drawing.Point(467, 279);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 11;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
+            this.deleteFromFinalListButton.Location = new System.Drawing.Point(408, 294);
+            this.deleteFromFinalListButton.Name = "deleteFromFinalListButton";
+            this.deleteFromFinalListButton.Size = new System.Drawing.Size(75, 23);
+            this.deleteFromFinalListButton.TabIndex = 11;
+            this.deleteFromFinalListButton.Text = "Удалить";
+            this.deleteFromFinalListButton.UseVisualStyleBackColor = true;
             // 
-            // button3
+            // finalCheckedListBox
             // 
-            this.button3.Location = new System.Drawing.Point(304, 279);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 12;
-            this.button3.Text = "button3";
-            this.button3.UseVisualStyleBackColor = true;
+            this.finalCheckedListBox.FormattingEnabled = true;
+            this.finalCheckedListBox.Location = new System.Drawing.Point(12, 323);
+            this.finalCheckedListBox.Name = "finalCheckedListBox";
+            this.finalCheckedListBox.Size = new System.Drawing.Size(776, 94);
+            this.finalCheckedListBox.TabIndex = 13;
             // 
             // TaskPicker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 443);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.ClientSize = new System.Drawing.Size(800, 457);
+            this.Controls.Add(this.finalCheckedListBox);
+            this.Controls.Add(this.deleteFromFinalListButton);
+            this.Controls.Add(this.addToFinalListButton);
             this.Controls.Add(this.bigTaskTypeLable);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.okButton);
@@ -180,6 +180,7 @@ namespace TaskAccounting
             this.Controls.Add(this.departmentPickerComboBox);
             this.Name = "TaskPicker";
             this.Text = "TaskPicker";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TaskPicker_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -197,8 +198,8 @@ namespace TaskAccounting
         private System.Windows.Forms.Button okButton;
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Label bigTaskTypeLable;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button addToFinalListButton;
+        private System.Windows.Forms.Button deleteFromFinalListButton;
+        private System.Windows.Forms.CheckedListBox finalCheckedListBox;
     }
 }
