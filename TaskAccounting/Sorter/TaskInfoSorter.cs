@@ -25,7 +25,7 @@ namespace TaskAccounting.Sorter
                 }
                 else
                 {
-                    return x.project.CompareTo(y.project);
+                    return x.projectName.CompareTo(y.projectName);
                 }
             }
         }

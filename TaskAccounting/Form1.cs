@@ -79,9 +79,9 @@ namespace TaskAccounting
             
             foreach(TaskInfo task in tasks)
             {
-                if(!projects.Contains(task.project))
+                if(!projects.Contains(task.projectName))
                 {
-                    projects.Add(task.project);
+                    projects.Add(task.projectName);
                 }
                 if(!taskTypes.Contains(task.taskType))
                 {

@@ -35,11 +35,51 @@ namespace TaskAccounting.XlsxService
                 if (xlsxRequestInfo.CheckRow(excelWorksheet, row, strs))
                 {
                     strs.Add(excelWorksheet.Cells[row, (int)xlsxRequestInfo.column].Value.ToString());
+                    
+                    //var s = new TaskInfo(excelWorksheet.Cells[row, 1, row, Enum.GetNames(typeof(XlsxColumns)).Length].Cast<string[]>());
+                    foreach(var i in excelWorksheet.Cells[row, 1, row, Enum.GetNames(typeof(XlsxColumns)).Length])
+                    {
+                        strs.Add(i.Text);
+                    }
+                    
                 }
             }
 
             return strs;
         }
+
+        public static List<TaskInfo> GetUniqueCellValues1(IXlsxRequetInfo xlsxRequestInfo)
+        {
+            if (xlsxRequestInfo == null)
+            {
+                throw new Exception("Не создан запрос");
+            }
+            if (xlsxRequestInfo.path == null)
+            {
+                throw new Exception("Неверный формат пути к файлу");
+            }
+            if (!File.Exists(xlsxRequestInfo.path))
+            {
+                throw new Exception("Файла не существует");
+            }
+
+            ExcelPackage xlPackage = new ExcelPackage(new FileInfo(xlsxRequestInfo.path));
+            ExcelWorksheet excelWorksheet = xlPackage.Workbook.Worksheets.First();
+            var tasks = new List<TaskInfo>();
+
+            for (int row = 3; row < excelWorksheet.Dimension.End.Row; row++)
+            {
+                if (xlsxRequestInfo.CheckRow(excelWorksheet, row, strs))
+                {
+                    strs.Add(excelWorksheet.Cells[row, (int)xlsxRequestInfo.column].Value.ToString());
+                    var s = new TaskInfo(excelWorksheet.Cells[row, 1, row, Enum.GetNames(typeof(XlsxColumns)).Length].);
+                }
+            }
+
+            return strs;
+        }
+
+
 
         public static List<string> GetUniqueCellValues(List<IXlsxRequetInfo> xlsxRequestInfo)
         {
@@ -127,10 +167,10 @@ namespace TaskAccounting.XlsxService
             {
                 if (xlsxRequestInfo.CheckRow(excelWorksheet, row))
                 {
-                    return new TaskInfo(excelWorksheet.Cells[row, (int)XlsxColumns.projectName].Value.ToString(),
-                        excelWorksheet.Cells[row, (int)XlsxColumns.taskGroup].Value.ToString(),
-                        excelWorksheet.Cells[row, (int)XlsxColumns.taskCode].Value.ToString(),
-                        excelWorksheet.Cells[row, (int)XlsxColumns.taskName].Value.ToString());
+                    //return new TaskInfo(excelWorksheet.Cells[row, (int)XlsxColumns.projectName].Value.ToString(),
+                    //    excelWorksheet.Cells[row, (int)XlsxColumns.taskGroup].Value.ToString(),
+                    //    excelWorksheet.Cells[row, (int)XlsxColumns.taskCode].Value.ToString(),
+                    //    excelWorksheet.Cells[row, (int)XlsxColumns.taskName].Value.ToString());
                 }
             }
 

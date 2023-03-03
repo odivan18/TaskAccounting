@@ -75,6 +75,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sorter\TaskInfoSorter.cs" />
+    <Compile Include="Strategy\TaskPickerStrategy.cs" />
     <Compile Include="TaskPicker.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -17,7 +17,7 @@ using TaskAccounting.XlsxService;
 
 namespace TaskAccounting
 {
-    enum XlsxColumns
+    public enum XlsxColumns
     {
         nul,
         departmentName,
@@ -213,7 +213,7 @@ namespace TaskAccounting
             {
                 if (excelWorksheet.Cells[rowN, (int)XlsxColumns.taskName].Value.ToString() == taskName)
                 {
-                    taskInfo.project = excelWorksheet.Cells[rowN, (int)XlsxColumns.projectName].Value.ToString();
+                    taskInfo.projectName = excelWorksheet.Cells[rowN, (int)XlsxColumns.projectName].Value.ToString();
                     taskInfo.taskType = excelWorksheet.Cells[rowN, (int)XlsxColumns.taskGroup].Value.ToString();
                     taskInfo.taskCode = excelWorksheet.Cells[rowN, (int)XlsxColumns.taskCode].Value.ToString();
 
