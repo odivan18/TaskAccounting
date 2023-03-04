@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using TaskAccounting.Strategy;
 
 namespace TaskAccounting.Filler
 {
@@ -51,6 +52,30 @@ namespace TaskAccounting.Filler
                 }
 
                 checkedListBox.Items.Add(task);
+            }
+        }
+
+        public static void CheckedListBoxWithTaskListHolder(CheckedListBox checkedListBox, TaskInfoListHolder tasks, XlsxColumns column)
+        {
+            if (tasks == null | tasks.tasks == null)
+            {
+                throw new Exception("Подан пустой список для впадающего списка на заполнение");
+            }
+
+            var array = new string[checkedListBox.Items.Count + 1];
+            checkedListBox.Items.CopyTo(array, 0);
+
+            checkedListBox.Items.Clear();
+            foreach (var task in tasks)
+            {
+                if (task == null)
+                {
+                    checkedListBox.Items.Clear();
+                    checkedListBox.Items.AddRange(array);
+                    throw new Exception("Ошибка в списке задач на заполнение");
+                }
+
+                checkedListBox.Items.Add(task[column]);
             }
         }
     }

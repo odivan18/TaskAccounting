@@ -142,6 +142,7 @@ namespace TaskAccounting
             this.addToFinalListButton.TabIndex = 10;
             this.addToFinalListButton.Text = "Добавить";
             this.addToFinalListButton.UseVisualStyleBackColor = true;
+            this.addToFinalListButton.Click += new System.EventHandler(this.addToFinalListButton_Click);
             // 
             // deleteFromFinalListButton
             // 

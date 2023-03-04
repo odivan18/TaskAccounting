@@ -1,142 +1,78 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using OfficeOpenXml;
-using System.IO;
-using TaskAccounting.Entity.XlsxRequestInfo;
 using TaskAccounting.Entity;
-using TaskAccounting.Parser;
 using TaskAccounting.Filler;
-using TaskAccounting.XlsxService;
 
 namespace TaskAccounting.Strategy
 {
     class TaskPickerStrategy
     {
-        List<TaskInfo> tasks;
+        TaskInfoListHolder taskInfoListHolderGeneral;
+        TaskInfoCheckedListHolder upperTasksShown;
+        TaskInfoCheckedListHolder lowerTasksShown;
+        ColumnsDictionary filterColumnDictionary = new ColumnsDictionary();
 
-        public void GetAllTasks(string path)
+        public TaskPickerStrategy(string path)
         {
-            if (path == null)
-            {
-                throw new Exception("Пустой путь к файлу");
-            }
-            if (!File.Exists(path))
-            {
-                throw new Exception($"По такому адресу файла не существует\n{path}");
-            }
+            taskInfoListHolderGeneral = new TaskInfoListHolder(XlsxService.XlsxService.GetAllTaskInfo(path));
+        }
+        public TaskPickerStrategy(string path, TaskInfoListHolder alreayPickedTasks, TaskPicker taskPicker)
+        {
+            taskInfoListHolderGeneral = new TaskInfoListHolder(XlsxService.XlsxService.GetAllTaskInfo(path));
+            lowerTasksShown = new TaskInfoCheckedListHolder(taskPicker.CheckedListBox(1));
+            upperTasksShown = new TaskInfoCheckedListHolder(taskPicker.CheckedListBox(0));
 
-            ExcelPackage xlPackage = new ExcelPackage(new FileInfo(path));
-            ExcelWorksheet excelWorksheet = xlPackage.Workbook.Worksheets.First();
+            lowerTasksShown.SetSource(alreayPickedTasks);
+        }
 
-            tasks = new List<TaskInfo>();
+        public void Fill(ComboBox comboBox, XlsxColumns column)
+        {
+            ListControlFiller.ComboBoxWithStringList(comboBox, taskInfoListHolderGeneral[column].Distinct().ToList());
+        }
 
-            for (int row = 3; row < excelWorksheet.Dimension.End.Row; row++)
+        public void Fill(ComboBox comboBox, XlsxColumns column, List<string> filters)
+        {
+            ListControlFiller.ComboBoxWithStringList(comboBox, filter(filters, taskInfoListHolderGeneral.tasks)[column].Distinct().ToList());
+        }
+
+        public void FillUpperCheckedBox(List<string> refVal)
+        {
+            upperTasksShown.SetSource(filter(refVal, taskInfoListHolderGeneral.tasks));
+        }
+
+        private TaskInfoListHolder filter(List<string> filters, List<TaskInfo> tasks)
+        {
+            var filtredTaskList = new List<TaskInfo>();
+
+            foreach (var task in tasks)
             {
-                if (xlsxRequestInfo.CheckRow(excelWorksheet, row, strs))
+                bool flag = false;
+
+                for (int filterColumn = 0; filterColumn < filters.Count; filterColumn++)
                 {
-                    var strs = new List<string>();
-
-                    //var s = new TaskInfo(excelWorksheet.Cells[row, 1, row, Enum.GetNames(typeof(XlsxColumns)).Length].Cast<string[]>());
-                    foreach (var i in excelWorksheet.Cells[row, 1, row, Enum.GetNames(typeof(XlsxColumns)).Length])
+                    if (task[filterColumnDictionary[filterColumn]] != filters[filterColumn])
                     {
-                        strs.Add(i.Text);
-                    }
-
-                    tasks.Add(new TaskInfo(strs));
-                    
+                        flag = true;
+                        break;
+                    }     
                 }
+
+                if (flag) continue;
+                filtredTaskList.Add(task);
             }
-
-            var strs = new List<string>();
-            foreach(var ti in tasks)
-            {
-                if(!strs.Contains(ti[XlsxColumns.departmentName]))
-                {
-                    strs.Add(ti[XlsxColumns.departmentName]);
-                }
-            }
-
-
+            
+            return new TaskInfoListHolder(filtredTaskList);
         }
 
-        public List<string> GetUniqueValInColumn(XlsxColumns column, List<TaskInfo> tasks)
+        public void AddPickedUpperToLower()
         {
-            var strs = new List<string>();
-            foreach (var ti in tasks)
-            {
-                if (!strs.Contains(ti[column]))
-                {
-                    strs.Add(ti[column]);
-                }
-            }
-
-            return strs;
-        }
-    }
-
-    class TaskInfoListHolder
-    {
-        List<TaskInfo> tasks;
-
-        public TaskInfoListHolder(List<TaskInfo> initTasksInfo)
-        {
-            if (initTasksInfo == null)
-            {
-                throw new Exception("Поптка инициализации пустм списком");
-            }
-
-            tasks = initTasksInfo;
+            lowerTasksShown.AddNewUnique(upperTasksShown.GetCheckedTasks());
         }
 
-        public TaskInfo this[int i]
+        public TaskInfoListHolder GetLowerPicked()
         {
-            get { return tasks[i]; }
-            set { tasks[i] = value; }
-        }
-
-        public List<string> this[XlsxColumns column]
-        {
-            get 
-            {
-                if (tasks == null)
-                {
-                    throw new Exception("Список задач не создан");
-                }
-
-                var strs = new List<string>();
-                foreach (var task in tasks)
-                {
-                        strs.Add(task[column]);
-                }
-
-                return strs;
-            }
-        }
-
-        public List<string> GetUniqueValInColumn(XlsxColumns column)
-        {
-            if (tasks == null)
-            {
-                throw new Exception("Список задач не создан");
-            }
-
-            var strs = new List<string>();
-            foreach (var ti in tasks)
-            {
-                if (!strs.Contains(ti[column]))
-                {
-                    strs.Add(ti[column]);
-                }
-            }
-
-            return strs;
+            return lowerTasksShown.GetCheckedTasks();
         }
     }
 }

@@ -1,19 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using OfficeOpenXml;
-using System.IO;
-using TaskAccounting.Entity.XlsxRequestInfo;
-using TaskAccounting.Entity;
 using TaskAccounting.Parser;
-using TaskAccounting.Filler;
-using TaskAccounting.XlsxService;
+using TaskAccounting.Strategy;
 
 namespace TaskAccounting
 {
@@ -30,26 +19,26 @@ namespace TaskAccounting
 
     public partial class TaskPicker : Form
     {
-        readonly string path = "C:/Users/Иван/Downloads/attachments/справочник1.xlsx";
+        string path = "C:/Users/Иван/Downloads/attachments/справочник1.xlsx";
 
         private ClientWindow parentForm = null;
+        private TaskPickerStrategy strategy;
 
         public TaskPicker()
         {
             InitializeComponent();
 
-            List<string> fields = XlsxService.XlsxService.GetUniqueCellValues(new XlsxDepartmentRequestInfo(path));
-            ListControlFiller.ComboBoxWithStringList(departmentPickerComboBox, fields);
+            strategy = new TaskPickerStrategy(path);
+            strategy.Fill(departmentPickerComboBox, XlsxColumns.departmentName);
 
             ControlEnability();
         }
-
         public TaskPicker(ClientWindow newParentForm)
         {
             InitializeComponent();
 
-            List<string> fields = XlsxService.XlsxService.GetUniqueCellValues(new XlsxDepartmentRequestInfo(path));
-            ListControlFiller.ComboBoxWithStringList(departmentPickerComboBox, fields);
+            strategy = new TaskPickerStrategy(path, newParentForm.GetShownTasks(), this);
+            strategy.Fill(departmentPickerComboBox, XlsxColumns.departmentName);
 
             parentForm = newParentForm;
             parentForm.SetControlEnability(false);
@@ -97,8 +86,10 @@ namespace TaskAccounting
                     taskTypePickerComboBox.Enabled = false;
                     taskCheckedListBox.Enabled = false;
 
-                    var requetInfo = new XlsxColumnRequestInfo(path, XlsxColumns.projectName, departmentPickerComboBox.Text);
-                    ListControlFiller.ComboBoxWithStringList(projectPickerComboBox, XlsxService.XlsxService.GetUniqueCellValues(requetInfo));
+                    var filter = new List<string>();
+                    filter.Add(departmentPickerComboBox.Text);
+                    strategy.Fill(projectPickerComboBox, XlsxColumns.projectName, filter);
+
                     projectPickerComboBox.Enabled = true;
                 }
             }
@@ -128,8 +119,11 @@ namespace TaskAccounting
                     taskTypePickerComboBox.Enabled = false;
                     taskCheckedListBox.Enabled = false;
 
-                    var requetInfo = new XlsxColumnRequestInfo(path, XlsxColumns.taskGroup, projectPickerComboBox.Text);
-                    ListControlFiller.ComboBoxWithStringList(taskTypePickerComboBox, XlsxService.XlsxService.GetUniqueCellValues(requetInfo));
+                    var filter = new List<string>();
+                    filter.Add(departmentPickerComboBox.Text);
+                    filter.Add(projectPickerComboBox.Text);
+                    strategy.Fill(taskTypePickerComboBox, XlsxColumns.taskGroup, filter);
+
                     taskTypePickerComboBox.Enabled = true;
                 }
             }
@@ -154,24 +148,12 @@ namespace TaskAccounting
 
                     taskCheckedListBox.Enabled = false;
 
-                    var requetInfo1 = new XlsxColumnRequestInfo(path, XlsxColumns.taskName, taskTypePickerComboBox.Text);
-                    var requetInfo2 = new XlsxColumnRequestInfo(path, XlsxColumns.taskCode, XlsxColumns.taskGroup, taskTypePickerComboBox.Text);
+                    var filter = new List<string>();
+                    filter.Add(departmentPickerComboBox.Text);
+                    filter.Add(projectPickerComboBox.Text);
+                    filter.Add(taskTypePickerComboBox.Text);
+                    strategy.FillUpperCheckedBox(filter);
 
-                    //var strs1 = XlsxService.XlsxService.GetUniqueCellValues(requetInfo1);
-                    //var strs2 = XlsxService.XlsxService.GetUniqueCellValues(requetInfo2);
-                    //var strssum = new List<string>();
-                    //if(strs1.Count==strs2.Count)
-                    //{
-                    //    for (int i = 0; i < strs1.Count; i++)
-                    //        strssum.Add(StringParser.CombineBySeparator(strs2[i], strs1[i], (char)2));
-                    //}
-
-                    var requests = new List<Interface.IXlsxRequetInfo>();
-                    requests.Add(requetInfo2);
-                    requests.Add(requetInfo1);
-                    var strssum = XlsxService.XlsxService.GetUniqueCellValues(requests);
-
-                    ListControlFiller.CheckedListBoxWithStringList(taskCheckedListBox, strssum);
                     taskCheckedListBox.Enabled = true;
                 }
             }
@@ -183,45 +165,14 @@ namespace TaskAccounting
 
         private void okButton_Click(object sender, EventArgs e)
         {
-            //FillDataGrid(parentForm.DataGrid, TaskList)
-
-            //ExcelPackage xlPackage = new ExcelPackage(new FileInfo(path));
-            //ExcelWorksheet excelWorksheet = xlPackage.Workbook.Worksheets.First();
-            var tasks = new List<TaskInfo>();
-
-
-            
-            
-            //Долго для большого множества 
-            foreach (var i in taskCheckedListBox.Items)
+            try
             {
-                var taskInfoRequetInfo = new XlsxTaskInfoRequetInfo(path, XlsxColumns.taskCode, i.ToString().Substring(0, i.ToString().IndexOf((char)2)));
-                tasks.Add(XlsxService.XlsxService.GetTaskInfo(taskInfoRequetInfo));
+                parentForm.FillDataGrid(strategy.GetLowerPicked());
             }
-
-            
-
-            parentForm.FillDataGrid(tasks);
-        }
-
-        private TaskInfo GetTaskInfoByTaskName(string taskName, ExcelWorksheet excelWorksheet)
-        {
-            var taskInfo = new TaskInfo();
-            taskInfo.taskName = taskName;
-
-            for (int rowN = 3; rowN < excelWorksheet.Dimension.End.Row; rowN++)
+            catch(Exception ex)
             {
-                if (excelWorksheet.Cells[rowN, (int)XlsxColumns.taskName].Value.ToString() == taskName)
-                {
-                    taskInfo.projectName = excelWorksheet.Cells[rowN, (int)XlsxColumns.projectName].Value.ToString();
-                    taskInfo.taskType = excelWorksheet.Cells[rowN, (int)XlsxColumns.taskGroup].Value.ToString();
-                    taskInfo.taskCode = excelWorksheet.Cells[rowN, (int)XlsxColumns.taskCode].Value.ToString();
-
-                    return taskInfo;
-                }
-            }
-
-            throw new Exception($"Задача с таким именем не найдена в базе:\n{taskName}");
+                MessageBox.Show(ex.Message);
+            }            
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -236,7 +187,24 @@ namespace TaskAccounting
                 parentForm.SetControlEnability(true);
             }
         }
-    }
 
-    
+        public CheckedListBox CheckedListBox(int n)
+        {
+            if (n == 0)
+            {
+                return taskCheckedListBox;
+            }
+            if (n == 1)
+            {
+                return finalCheckedListBox;
+            }
+
+            return null;
+        }
+
+        private void addToFinalListButton_Click(object sender, EventArgs e)
+        {
+            strategy.AddPickedUpperToLower();
+        }
+    }
 }

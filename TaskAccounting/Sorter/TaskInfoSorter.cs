@@ -25,12 +25,12 @@ namespace TaskAccounting.Sorter
                 }
                 else
                 {
-                    return x.projectName.CompareTo(y.projectName);
+                    return x.[XlsxColumns.projectName].CompareTo(y.[XlsxColumns.projectName]);
                 }
             }
         }
 
-        public static int ByTaskType(TaskInfo x, TaskInfo y)
+        public static int ByTaskGroup(TaskInfo x, TaskInfo y)
         {
             if (x == null)
             {
@@ -51,7 +51,7 @@ namespace TaskAccounting.Sorter
                 }
                 else
                 {
-                    return x.taskType.CompareTo(y.taskType);
+                    return x[XlsxColumns.taskGroup].CompareTo(y[XlsxColumns.taskGroup]);
                 }
             }
         }

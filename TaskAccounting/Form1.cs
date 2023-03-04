@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using TaskAccounting.Sorter;
 using TaskAccounting.Entity;
+using TaskAccounting.Strategy;
 
 namespace TaskAccounting
 {
@@ -23,11 +24,6 @@ namespace TaskAccounting
                 TaskDataGridView.Columns.Add($"day{i}", $"{i}");
                 TaskDataGridView.Columns[i].Width = 50;
             }
-
-            var msg = new StringBuilder();
-            for (int i = 1; i < 50; i++)
-                msg.Append($"{i} - {(char)i}\n");
-            MessageBox.Show(((int)' ').ToString());
         }
 
         private void отправитьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -48,7 +44,6 @@ namespace TaskAccounting
             {
                 var taskPicker = new TaskPicker(this);
                 taskPicker.Show();
-                //while(taskPicker.is)
             }
             catch(Exception ex)
             {
@@ -71,23 +66,23 @@ namespace TaskAccounting
                 throw new Exception("Подан пустой список на заполнение таблицы");
             }
 
-            tasks.Sort(TaskInfoSorter.ByTaskType);
+            tasks.Sort(TaskInfoSorter.ByTaskGroup);
             tasks.Sort(TaskInfoSorter.ByProject);
 
             List<string> projects = new List<string>();
             List<string> taskTypes = new List<string>();
             
-            foreach(TaskInfo task in tasks)
-            {
-                if(!projects.Contains(task.projectName))
-                {
-                    projects.Add(task.projectName);
-                }
-                if(!taskTypes.Contains(task.taskType))
-                {
-                    taskTypes.Add(task.taskType);
-                }
-            }
+            //foreach(TaskInfo task in tasks)
+            //{
+            //    if(!projects.Contains(task.projectName))
+            //    {
+            //        projects.Add(task.projectName);
+            //    }
+            //    if(!taskTypes.Contains(task.taskType))
+            //    {
+            //        taskTypes.Add(task.taskType);
+            //    }
+            //}
 
             foreach(var project in projects)
             {
@@ -96,6 +91,16 @@ namespace TaskAccounting
                 //List<string> taskTypes = new List<string>();
             }
 
+        }
+
+        public void FillDataGrid(TaskInfoListHolder tasks)
+        {
+
+        }
+
+        public TaskInfoListHolder GetShownTasks()
+        {
+            return null;
         }
     }
 }
