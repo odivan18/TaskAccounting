@@ -24,15 +24,6 @@ namespace TaskAccounting
         private ClientWindow parentForm = null;
         private TaskPickerStrategy strategy;
 
-        public TaskPicker()
-        {
-            InitializeComponent();
-
-            strategy = new TaskPickerStrategy(path);
-            strategy.Fill(departmentPickerComboBox, XlsxColumns.departmentName);
-
-            ControlEnability();
-        }
         public TaskPicker(ClientWindow newParentForm)
         {
             InitializeComponent();
@@ -204,7 +195,14 @@ namespace TaskAccounting
 
         private void addToFinalListButton_Click(object sender, EventArgs e)
         {
-            strategy.AddPickedUpperToLower();
+            try
+            {
+                strategy.AddPickedUpperToLower();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }            
         }
     }
 }

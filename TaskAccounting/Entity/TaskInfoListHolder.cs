@@ -5,7 +5,7 @@ using TaskAccounting.Entity;
 
 namespace TaskAccounting
 {
-    class TaskInfoListHolder
+    public class TaskInfoListHolder
     {
         public List<TaskInfo> tasks { get; set; }
 
@@ -71,11 +71,11 @@ namespace TaskAccounting
         //Не нравится
         public TaskInfo Find(string val, XlsxColumns column)
         {
-            foreach (var i in tasks)
+            foreach (TaskInfo task in tasks)
             {
-                if (i[column] == val)
+                if (task[column] == val)
                 {
-                    return i;
+                    return task;
                 }
             }
 

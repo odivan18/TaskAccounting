@@ -13,10 +13,6 @@ namespace TaskAccounting.Strategy
         TaskInfoCheckedListHolder lowerTasksShown;
         ColumnsDictionary filterColumnDictionary = new ColumnsDictionary();
 
-        public TaskPickerStrategy(string path)
-        {
-            taskInfoListHolderGeneral = new TaskInfoListHolder(XlsxService.XlsxService.GetAllTaskInfo(path));
-        }
         public TaskPickerStrategy(string path, TaskInfoListHolder alreayPickedTasks, TaskPicker taskPicker)
         {
             taskInfoListHolderGeneral = new TaskInfoListHolder(XlsxService.XlsxService.GetAllTaskInfo(path));

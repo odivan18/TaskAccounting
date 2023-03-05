@@ -7,7 +7,6 @@ namespace TaskAccounting.Entity
     {
         public string[] field;
 
-        public TaskInfo() { }
         public TaskInfo(List<string> excelRow)
         {
             field = new string[Enum.GetNames(typeof(XlsxColumns)).Length];

@@ -61,9 +61,6 @@
   <ItemGroup>
     <Compile Include="Dictionary\ColumnsDictionary.cs" />
     <Compile Include="Entity\TaskInfo.cs" />
-    <Compile Include="Entity\XlsxRequestInfo\XlsxColumnRequestInfo.cs" />
-    <Compile Include="Entity\XlsxRequestInfo\XlsxDepartmentRequestInfo.cs" />
-    <Compile Include="Entity\XlsxRequestInfo\XlsxTaskInfoRequetInfo.cs" />
     <Compile Include="Filler\ListControlFiller.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -71,7 +68,6 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Interface\IXlsxRequestInfo.cs" />
     <Compile Include="Parser\StringParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
